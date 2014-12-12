@@ -1,0 +1,70 @@
+---
+title: "Reproducible Research: Peer Assessment 2, Storms"
+output: 
+  html_document:
+    keep_md: true
+---
+
+
+## Loading packages
+```{r}
+library(dplyr)
+library(lubridate)
+```
+
+
+### Loading and Processing the Raw data
+
+We download the data from the course website for Reproducible Research. Note that https:// URLs are not supported by download.file by default, but using method = "curl" permits the download. Also we use "bzfile" in the read.csv argument since the file is a bz2 file.
+
+```{r, cache=TRUE}
+temp <- tempfile()
+download.file("https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2", temp, method = "curl")
+data <- read.csv(bzfile(temp, "repdata%2Fdata%2FStormData.csv.bz2"), header = TRUE)
+unlink(temp)
+```
+
+Let's have a look at the data. First of all I prefer having variables in lowercase
+```{r}
+data2 <- data ## remove this later, just so I don't have to keep reading in the file
+data2 <- data2[,c("bgn_date", "state", "evtype",  "fatalities", "injuries", "propdmg", "propdmgexp", "cropdmg", "cropdmgexp")]
+
+names(data2) <- tolower(names(data2))
+names(data2)
+data2$evtype <- tolower(data2$evtype)
+length(unique(data2$evtype))
+```
+
+
+```{r, cache=TRUE}
+## remove extraneous variables
+
+
+head(data2)
+
+## remove extraneous event types - working
+event_pattern <- "(summary|\\?|other)"
+data2$index <- grepl(event_pattern, data2$evtype)
+data2 <- data2[!data2$index == TRUE,] # remove daily summaries and unknown types
+
+
+## group thunderstorm types together - working
+length(unique(data2$evtype))
+data2$evtype2 <- data2$evtype
+length(unique(data2$evtype2))
+thunder_pattern <- "(thunder|microburst)"
+data2$evtype2 <- ifelse(grepl(thunder_pattern, data2$evtype) == TRUE, "thunderstorm", data2$evtype2)
+
+length(unique(data2$evtype2))
+```
+
+
+# Question 1:
+## Across the United States, which types of events (as indicated in the EVTYPE variable) are most harmful with respect to population health?
+
+
+
+
+# Question 2:
+## Across the United States, which types of events have the greatest economic consequences?
+
